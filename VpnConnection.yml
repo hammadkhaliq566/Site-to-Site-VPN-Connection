@@ -1,0 +1,38 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: "AWS Site to Site VPN Connection Test"
+##########################################################################################
+  # Resources Section
+##########################################################################################
+Resources:
+  myCustomerGateway: 
+    Type: AWS::EC2::CustomerGateway
+    Properties: 
+      Type: ipsec.1
+      BgpAsn: 65534
+      IpAddress: 11.0.0.0
+
+  myVPNConnection: 
+    Type: AWS::EC2::VPNConnection
+    Properties: 
+      Type: ipsec.1
+      StaticRoutesOnly: true
+      CustomerGatewayId: 
+        !Ref myCustomerGateway
+      TransitGatewayId: 
+        !Ref myTransitGateway
+    DependsOn:
+    - myCustomerGateway
+    - myTransitGateway
+
+  myTransitGateway:
+    Type: AWS::EC2::TransitGateway
+    Properties:
+      AmazonSideAsn: 65000
+      Description: "TGW Route Integration Test"
+      AutoAcceptSharedAttachments: "disable"
+      DefaultRouteTableAssociation: "enable"
+      DnsSupport: "enable"
+      VpnEcmpSupport: "enable"
+      Tags:
+      - Key: Application
+        Value: !Ref 'AWS::StackId'
